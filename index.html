@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Synced Video Player</title>
+  <style>
+    #videoContainer {
+      display: flex;
+      justify-content: center;
+    }
+
+    video {
+      margin: 10px;
+      width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div id="videoContainer">
+    <video id="video1" controls></video>
+    <video id="video2" controls></video>
+  </div>
+
+  <input type="range" id="timeline" min="0" value="0">
+  <button id="openButton1">Open Video 1</button>
+  <button id="openButton2">Open Video 2</button>
+  
+  <script>
+    const video1 = document.getElementById('video1');
+    const video2 = document.getElementById('video2');
+    const timeline = document.getElementById('timeline');
+    const openButton1 = document.getElementById('openButton1');
+    const openButton2 = document.getElementById('openButton2');
+
+    // Add event listeners for video play/pause events
+    video1.addEventListener('play', syncVideos);
+    video1.addEventListener('pause', syncVideos);
+    video2.addEventListener('play', syncVideos);
+    video2.addEventListener('pause', syncVideos);
+
+    // Add event listener for timeline changes
+    timeline.addEventListener('input', handleTimelineChange);
+
+    // Add event listeners for the open buttons
+    openButton1.addEventListener('click', openVideo1);
+    openButton2.addEventListener('click', openVideo2);
+
+    // Synchronize the playback of videos
+    function syncVideos() {
+      if (!video1.paused) {
+        video2.currentTime = video1.currentTime;
+        video2.play();
+      } else if (!video2.paused) {
+        video1.currentTime = video2.currentTime;
+        video1.play();
+      } else {
+        video1.pause();
+        video2.pause();
+      }
+    }
+
+    // Handle timeline changes
+    function handleTimelineChange() {
+      const currentTime = timeline.value;
+      video1.currentTime = currentTime;
+      video2.currentTime = currentTime;
+      syncVideos();
+    }
+
+    // Open video 1
+    function openVideo1() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'video/*';
+      fileInput.addEventListener('change', function (event) {
+        handleFileSelection(event, video1);
+      });
+      fileInput.click();
+    }
+
+    // Open video 2
+    function openVideo2() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'video/*';
+      fileInput.addEventListener('change', function (event) {
+        handleFileSelection(event, video2);
+      });
+      fileInput.click();
+    }
+
+    // Handle file selection
+    function handleFileSelection(event, videoElement) {
+      const file = event.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        videoElement.src = fileURL;
+
+        // Reset the playback and synchronization
+        videoElement.pause();
+        videoElement.currentTime = 0;
+        timeline.value = 0;
+      }
+    }
+  </script>
+</body>
+</html>
