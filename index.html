@@ -2,40 +2,89 @@
 <html>
 <head>
   <title>Synced Video Player</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
   <style>
     #videoContainer {
       display: flex;
-      justify-content: center;
+      flex-direction: row;
+      align-items: center;
+      position: relative;
+      gap: 1rem;
+    }
+
+    .loadVideosWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      gap: 0.5rem;
+    }
+
+    .videoWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      margin-bottom: 20px;
     }
 
     video {
-      margin: 10px;
-      width: 400px;
+      width: 720px;
+      height: 480px;
+    }
+
+    #controls {
+      /* position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%); */
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px;
+    }
+
+    #timeline {
+      width: 100%;
+    }
+
+    #playPauseButton {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div id="videoContainer">
-    <video id="video1" controls></video>
-    <video id="video2" controls></video>
+    <div class="loadVideosWrapper">
+      <button id="openButton1" class="btn btn-secondary">Open Video 1</button>
+      <button id="openButton2" class="btn btn-secondary">Open Video 2</button>
+    </div>
+    <div class="videoWrapper">
+      <video id="video1" controls></video>
+      <video id="video2" controls></video>
+    </div>
+    <div id="controls">
+      <input type="range" id="timeline" min="0" value="0" class="form-range">
+      <button id="playPauseButton" class="btn btn-primary">Play/Pause</button>
+    </div>
   </div>
-
-  <input type="range" id="timeline" min="0" value="0">
-  <button id="openButton1">Open Video 1</button>
-  <button id="openButton2">Open Video 2</button>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
   <script>
     const video1 = document.getElementById('video1');
     const video2 = document.getElementById('video2');
     const timeline = document.getElementById('timeline');
     const openButton1 = document.getElementById('openButton1');
     const openButton2 = document.getElementById('openButton2');
+    const playPauseButton = document.getElementById('playPauseButton');
 
     // Add event listeners for video play/pause events
     video1.addEventListener('play', syncVideos);
     video1.addEventListener('pause', syncVideos);
+    video1.addEventListener('loadedmetadata', updateTimelineMax);
     video2.addEventListener('play', syncVideos);
     video2.addEventListener('pause', syncVideos);
+    video2.addEventListener('loadedmetadata', updateTimelineMax);
 
     // Add event listener for timeline changes
     timeline.addEventListener('input', handleTimelineChange);
@@ -43,6 +92,9 @@
     // Add event listeners for the open buttons
     openButton1.addEventListener('click', openVideo1);
     openButton2.addEventListener('click', openVideo2);
+
+    // Add event listener for the play/pause button
+    playPauseButton.addEventListener('click', playPauseVideos);
 
     // Synchronize the playback of videos
     function syncVideos() {
@@ -64,6 +116,12 @@
       video1.currentTime = currentTime;
       video2.currentTime = currentTime;
       syncVideos();
+    }
+
+    // Update the maximum value of the timeline based on video duration
+    function updateTimelineMax() {
+      const maxDuration = Math.max(video1.duration, video2.duration);
+      timeline.max = maxDuration;
     }
 
     // Open video 1
@@ -99,6 +157,20 @@
         videoElement.pause();
         videoElement.currentTime = 0;
         timeline.value = 0;
+
+        // Update the maximum value of the timeline after the video is loaded
+        videoElement.addEventListener('loadedmetadata', updateTimelineMax);
+      }
+    }
+
+    // Play/Pause videos
+    function playPauseVideos() {
+      if (!video1.paused || !video2.paused) {
+        video1.pause();
+        video2.pause();
+      } else {
+        video1.play();
+        video2.play();
       }
     }
   </script>
